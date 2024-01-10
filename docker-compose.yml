@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  app_nginx:
+    container_name: app_nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    ports: 
+      - 8081:80
+    tty: true
+    volumes:
+      - ./:/var/www
+      - ./.deploy/nginx/conf.d/app.conf:/etc/nginx/conf.d/app.conf
+      - /var/www/app_fpm/logs/nginx:/var/log/nginx
+
+  app_fpm:
+    container_name: app_fpm
+    restart: unless-stopped
+    build:
+      context: .
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./.deploy/php/conf.d/custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini
+      - /var/www/app_fpm/logs/php-fpm:/var/log/php-fpm
+
+networks:
+  default:
+    external: true
+    name: moguta_network
